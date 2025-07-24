@@ -117,43 +117,27 @@
 </template>
 
 <script setup>
-// Import Vue tools, router, and Axios for API calls
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import backgroundImage from '../images/back.jpg'
 
-// Reactive state variables
-const username = ref('') // Stores username input
-const password = ref('') // Stores password input
-const error = ref('')    // Stores error message
-const showPassword = ref(false) // Controls show/hide password toggle
+const username = ref('')
+const password = ref('')
+const error = ref('')
+const showPassword = ref(false)
+const router = useRouter()
 
-const router = useRouter() // Router for navigation
-
-// Login function: sends POST request to backend and handles result
-const login = async () => {
-  error.value = '' // Clear any previous error
-  try {
-    const res = await axios.post('/api/login', {
-      username: username.value,
-      password: password.value
-    })
-
-    // If backend returns success, save token and navigate to home
-    if (res.data.success) {
-      localStorage.setItem('adminToken', res.data.token)
-      router.push('/')
-    } else {
-      // If login fails
-      error.value = 'Invalid username or password'
-    }
-  } catch (err) {
-    console.error(err)
-    error.value = 'Login failed. Please check your connection.'
+const login = () => {
+  error.value = ''
+  if (username.value === 'admin' && password.value === '12345') {
+    localStorage.setItem('adminAuthenticated', 'true')
+    router.push('/')
+  } else {
+    error.value = 'Invalid username or password'
   }
 }
 </script>
+
 
 <style scoped>
 /* Fade in animation for the form container */

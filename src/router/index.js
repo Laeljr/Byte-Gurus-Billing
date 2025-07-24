@@ -2,8 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '@/components/Dashboard.vue'
 import InvoicePage from '@/pages/InvoicePage.vue'
 import ReceiptPage from '@/pages/ReceiptPage.vue'
+import ReceiptListPage from '@/pages/ReceiptListPage.vue'  // Added for listing saved receipts
 import QuotationPage from '@/pages/QuotationPage.vue'
-import Login from '@/pages/Login.vue' // Make sure you create this file!
+import QuotationListPage from '@/pages/QuotationListPage.vue' // Added for listing saved quotes
+import Login from '@/pages/Login.vue'
+import InvoiceListPage from '@/pages/InvoiceListPage.vue'
 
 const routes = [
   { 
@@ -17,14 +20,29 @@ const routes = [
     meta: { requiresAuth: true } 
   },
   { 
+    path: '/invoices', 
+    component: InvoiceListPage,
+    meta: { requiresAuth: true } 
+  },
+  { 
     path: '/receipt', 
     component: ReceiptPage, 
     meta: { requiresAuth: true } 
   },
   { 
-    path: '/quotation', 
+    path: '/receipt/list',  // New route for saved receipts
+    component: ReceiptListPage,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/quotation', // Quote Editor Page
     component: QuotationPage, 
     meta: { requiresAuth: true } 
+  },
+  { 
+    path: '/quotation/list', // Quote List Page
+    component: QuotationListPage, 
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -37,7 +55,8 @@ const router = createRouter({
   routes
 })
 
-// ✅ Add a global navigation guard
+// Uncomment below to enable authentication guard
+/*
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('adminAuthenticated') === 'true'
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -46,5 +65,6 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+*/
 
 export default router

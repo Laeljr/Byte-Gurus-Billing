@@ -116,7 +116,6 @@ watch(
 )
 
 function handleSave() {
-  // Validation
   if (!form.value.description.trim()) {
     alert('Description cannot be empty.')
     return
@@ -130,8 +129,8 @@ function handleSave() {
     return
   }
 
-  emit('save', { ...form.value })
-  emit('close')
+  emit('save', { ...form.value }) // ✅ Only emit save!
+  // ❌ Do not emit close here — parent closes it after saving.
 }
 
 function handleClose() {
@@ -140,7 +139,6 @@ function handleClose() {
 </script>
 
 <style scoped>
-/* Optional: Add focus outline for accessibility */
 :focus {
   outline: 2px solid #103355;
   outline-offset: 2px;

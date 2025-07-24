@@ -18,11 +18,25 @@
         Invoice
       </router-link>
       <router-link
+        to="/invoices"
+        class="hover:underline"
+        active-class="underline font-semibold"
+      >
+        Saved Invoices
+      </router-link>
+      <router-link
         to="/receipt"
         class="hover:underline"
         active-class="underline font-semibold"
       >
         Receipt
+      </router-link>
+      <router-link
+        to="/receipt/list"
+        class="hover:underline"
+        active-class="underline font-semibold"
+      >
+        Saved Receipts
       </router-link>
       <router-link
         to="/quotation"
@@ -31,22 +45,21 @@
       >
         Quotation
       </router-link>
+      <router-link
+        to="/quotation/list"
+        class="hover:underline"
+        active-class="underline font-semibold"
+      >
+        Saved Quotes
+      </router-link>
 
       <span class="mx-2">|</span>
 
-      <router-link
-        v-if="!isLoggedIn"
-        to="/login"
-        class="hover:underline"
-      >
+      <router-link v-if="!isLoggedIn" to="/login" class="hover:underline">
         Login
       </router-link>
 
-      <button
-        v-else
-        @click="logout"
-        class="hover:underline"
-      >
+      <button v-else @click="logout" class="hover:underline">
         Logout
       </button>
     </div>
