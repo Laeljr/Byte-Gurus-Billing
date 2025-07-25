@@ -124,8 +124,14 @@
           >
             Save Quote
           </button>
-          
-         
+
+          <!-- ✅ New “View Saved Quotes” button -->
+          <router-link
+            to="/quotation/list"
+            class="inline-block px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800"
+          >
+            View Saved Quotes
+          </router-link>
         </div>
       </div>
 
@@ -148,6 +154,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'

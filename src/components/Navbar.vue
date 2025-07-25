@@ -10,6 +10,7 @@
       >
         Dashboard
       </router-link>
+
       <router-link
         to="/invoice"
         class="hover:underline"
@@ -17,13 +18,7 @@
       >
         Invoice
       </router-link>
-      <router-link
-        to="/invoices"
-        class="hover:underline"
-        active-class="underline font-semibold"
-      >
-        Saved Invoices
-      </router-link>
+
       <router-link
         to="/receipt"
         class="hover:underline"
@@ -31,26 +26,13 @@
       >
         Receipt
       </router-link>
-      <router-link
-        to="/receipt/list"
-        class="hover:underline"
-        active-class="underline font-semibold"
-      >
-        Saved Receipts
-      </router-link>
+
       <router-link
         to="/quotation"
         class="hover:underline"
         active-class="underline font-semibold"
       >
         Quotation
-      </router-link>
-      <router-link
-        to="/quotation/list"
-        class="hover:underline"
-        active-class="underline font-semibold"
-      >
-        Saved Quotes
       </router-link>
 
       <span class="mx-2">|</span>

@@ -1,3 +1,4 @@
+<!-- ✅ Your existing code with only the new button added -->
 <template>
   <div
     class="min-h-screen w-full bg-cover bg-center flex justify-center items-start p-6"
@@ -46,8 +47,7 @@
               <th class="p-2 text-right">Qty</th>
               <th class="p-2 text-right">Unit Price</th>
               <th class="p-2 text-right">Amount</th>
-          
-           </tr>
+            </tr>
           </thead>
           <tbody>
             <tr
@@ -60,9 +60,6 @@
               <td class="p-2 text-right">{{ item.quantity }}</td>
               <td class="p-2 text-right">{{ item.unitPrice.toFixed(2) }}</td>
               <td class="p-2 text-right">{{ (item.quantity * item.unitPrice).toFixed(2) }}</td>
-              <td class="p-2 text-center">
-                
-              </td>
             </tr>
             <tr v-if="items.length === 0">
               <td colspan="5" class="text-center p-4 text-gray-500">
@@ -93,7 +90,7 @@
         </div>
       </div>
 
-      <!-- ACTION BUTTONS -->
+      <!-- ✅ ACTION BUTTONS with new Saved Invoices button -->
       <div class="flex flex-wrap justify-between items-center mb-4 gap-2 mt-6">
         <div class="flex gap-2">
           <button @click="openAddDialog" class="bg-[#103355] text-white px-4 py-2 rounded hover:bg-[#0e2a4d]">
@@ -107,6 +104,14 @@
           <button @click="saveInvoice" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
             Save Invoice
           </button>
+
+          <!-- ✅ New View Saved Invoices button -->
+          <router-link
+            to="/invoices"
+            class="inline-block px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800"
+          >
+            View Saved Invoices
+          </router-link>
         </div>
       </div>
 

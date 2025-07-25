@@ -108,28 +108,36 @@
         </div>
       </div>
 
-      <!-- Action buttons hidden when printing -->
-      <div class="text-center mt-6 space-x-3 print:hidden">
-        <button
-          @click="addItem"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Add Item
-        </button>
-        <button
-          @click="openClientModal"
-          class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-        >
-          Edit Client
-        </button>
-            
-        <button
-          @click="saveReceipt"
-          class="bg-[#103355] text-white px-6 py-2 rounded hover:bg-[#0e2a4d]"
-        >
-          Save Receipt
-        </button>
-      </div>
+  <!-- Action buttons hidden when printing -->
+<div class="text-center mt-6 space-x-3 print:hidden">
+  <button
+    @click="addItem"
+    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+  >
+    Add Item
+  </button>
+  <button
+    @click="openClientModal"
+    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+  >
+    Edit Client
+  </button>
+  <button
+    @click="saveReceipt"
+    class="bg-[#103355] text-white px-6 py-2 rounded hover:bg-[#0e2a4d]"
+  >
+    Save Receipt
+  </button>
+
+  <!-- ✅ New “View Saved Receipts” button -->
+  <router-link
+    to="/receipt/list"
+    class="inline-block px-6 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+  >
+    View Saved Receipts
+  </router-link>
+</div>
+
 
       <!-- Modals -->
       <ItemFormModal
