@@ -35,7 +35,7 @@
         <!-- Info section with receipt and customer details -->
         <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
           <div>
-            <p><strong>Receipt No:</strong> REC-{{ today.replace(/-/g, '') }}</p>
+            <p><strong>Receipt No:</strong> {{ receiptNumber }}</p>
             <p><strong>Date:</strong> {{ today }}</p>
           </div>
           <div class="text-right space-y-1">
@@ -108,36 +108,34 @@
         </div>
       </div>
 
-  <!-- Action buttons hidden when printing -->
-<div class="text-center mt-6 space-x-3 print:hidden">
-  <button
-    @click="addItem"
-    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-  >
-    Add Item
-  </button>
-  <button
-    @click="openClientModal"
-    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-  >
-    Edit Client
-  </button>
-  <button
-    @click="saveReceipt"
-    class="bg-[#103355] text-white px-6 py-2 rounded hover:bg-[#0e2a4d]"
-  >
-    Save Receipt
-  </button>
+      <!-- Action buttons hidden when printing -->
+      <div class="text-center mt-6 space-x-3 print:hidden">
+        <button
+          @click="addItem"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Add Item
+        </button>
+        <button
+          @click="openClientModal"
+          class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+        >
+          Edit Client
+        </button>
+        <button
+          @click="saveReceipt"
+          class="bg-[#103355] text-white px-6 py-2 rounded hover:bg-[#0e2a4d]"
+        >
+          Save Receipt
+        </button>
 
-  <!-- ✅ New “View Saved Receipts” button -->
-  <router-link
-    to="/receipt/list"
-    class="inline-block px-6 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-  >
-    View Saved Receipts
-  </router-link>
-</div>
-
+        <router-link
+          to="/receipt/list"
+          class="inline-block px-6 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+        >
+          View Saved Receipts
+        </router-link>
+      </div>
 
       <!-- Modals -->
       <ItemFormModal
@@ -156,9 +154,6 @@
         @save="saveClient"
         @close="showClientModal = false"
       />
-
-      <!-- Receipt Preview Modal -->
-     
     </div>
   </div>
 </template>
@@ -168,10 +163,9 @@ import { ref, computed } from "vue";
 import ItemFormModal from "../components/ItemFormModal.vue";
 import ClientAndPaymentModal from "../components/ClientAndPaymentModal.vue";
 import bgImage from "../images/back.jpg";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 const today = new Date().toISOString().split("T")[0];
+const dateStr = today.replace(/-/g, "");
 
 const customer = ref({
   name: "Andrew Mwale",
@@ -199,8 +193,17 @@ const editIndex = ref(null);
 const showClientModal = ref(false);
 const editableClient = ref({ ...customer.value });
 
-const showPreview = ref(false);
-const printContent = ref("");
+const receiptNumber = ref(`REC-${dateStr}-001`);
+
+// Helper function to update receipt number based on saved receipts count
+function updateReceiptNumber(savedReceipts) {
+  const todaysReceipts = savedReceipts.filter(r => r.number.startsWith(`REC-${dateStr}`));
+  const counter = todaysReceipts.length + 1;
+  receiptNumber.value = `REC-${dateStr}-${String(counter).padStart(3, "0")}`;
+}
+
+let savedReceipts = JSON.parse(localStorage.getItem("receipts") || "[]");
+updateReceiptNumber(savedReceipts);
 
 function addItem() {
   editableItem.value = { name: "", qty: 1, price: 0 };
@@ -241,111 +244,14 @@ function saveClient({ client, paymentMethod: pm, receiver }) {
   showClientModal.value = false;
 }
 
-function getCleanPrintHtml() {
-  const printArea = document.getElementById("print-area");
-  if (!printArea) return "";
-  const clone = printArea.cloneNode(true);
-  const ths = clone.querySelectorAll("th");
-  let actionIndex = -1;
-  ths.forEach((th, idx) => {
-    if (th.classList.contains("print-hidden")) actionIndex = idx;
-  });
-  if (actionIndex > -1) {
-    ths[actionIndex].remove();
-    clone.querySelectorAll("tbody tr").forEach((tr) => {
-      const tds = tr.querySelectorAll("td");
-      if (tds.length > actionIndex) tds[actionIndex].remove();
-    });
-  }
-  clone.querySelectorAll(".print-hidden").forEach((el) => el.remove());
-  return `<div style="text-align:center; margin-bottom:20px;"><h1 style="font-size:24px; font-weight:bold;">Receipt</h1></div>${clone.innerHTML}`;
-}
-
-function openPreview() {
-  printContent.value = getCleanPrintHtml();
-  showPreview.value = true;
-}
-
-function closePreview() {
-  showPreview.value = false;
-}
-
-function printFromPreview() {
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) return;
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Receipt</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 8px; }
-          th { background-color: #cbd5e1; color: #1e40af; text-align: left; }
-          .status-paid { background-color: #bbf7d0; color: #166534; padding: 6px 12px; border-radius: 9999px; font-weight: 600; display: inline-block; }
-          .text-right { text-align: right; }
-          .print-hidden { display: none !important; }
-        </style>
-      </head>
-      <body>
-        <h1 style="text-align:center;">Receipt</h1>
-        ${getCleanPrintHtml()}
-        <script>
-          window.onload = function() { window.print(); window.close(); }
-        <\/script>
-      </body>
-    </html>
-  `);
-  printWindow.document.close();
-  showPreview.value = false;
-}
-
-//async function exportPdf() {
-  //const printArea = document.getElementById("print-area");
-//  if (!printArea) return;
-//  const clone = printArea.cloneNode(true);
-//  const ths = clone.querySelectorAll("th");
-  //let actionIndex = -1;
- // ths.forEach((th, idx) => {
-   // if (th.classList.contains("print-hidden")) actionIndex = idx;
-  //});
- // if (actionIndex > -1) {
-   // ths[actionIndex].remove();
-    //clone.querySelectorAll("tbody tr").forEach((tr) => {
-      //const tds = tr.querySelectorAll("td");
-      //if (tds.length > actionIndex) tds[actionIndex].remove();
-    //});
-  //}
- // clone.querySelectorAll(".print-hidden").forEach((el) => el.remove());
-
-//  const container = document.createElement("div");
- // container.style.position = "fixed";
-  //container.style.top = "-10000px";
-  //container.style.left = "-10000px";
-  //container.style.background = "white";
-  //container.appendChild(clone);
-  //document.body.appendChild(container);
-
-  //const canvas = await html2canvas(clone, { scale: 2 });
-  //const imgData = canvas.toDataURL("image/png");
-
-  //document.body.removeChild(container);
-
-  //const pdf = new jsPDF("p", "mm", "a4");
-  //const pdfWidth = pdf.internal.pageSize.getWidth();
-  //const imgProps = pdf.getImageProperties(imgData);
-  //const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-//  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-  //pdf.save(`Receipt_${today.replace(/-/g, "")}.pdf`);
-//}
-
-// Updated saveReceipt with validation, reset and correct key & property names
 function saveReceipt() {
   if (items.value.length === 0) {
     alert("Please add at least one item before saving the receipt.");
     return;
   }
+
+  savedReceipts = JSON.parse(localStorage.getItem("receipts") || "[]");
+  updateReceiptNumber(savedReceipts);
 
   const receiptData = {
     customer: customer.value,
@@ -354,19 +260,15 @@ function saveReceipt() {
     amountReceiver: amountReceiver.value,
     total: total.value,
     date: today,
-    number: `REC-${today.replace(/-/g, "")}`,
+    number: receiptNumber.value,
   };
 
-  // Load existing receipts or initialize empty array
-  let savedReceipts = JSON.parse(localStorage.getItem("receipts") || "[]");
-
   savedReceipts.push(receiptData);
-
   localStorage.setItem("receipts", JSON.stringify(savedReceipts));
 
-  alert("Receipt saved successfully!");
+  alert(`Receipt saved successfully! Receipt No: ${receiptNumber.value}`);
 
-  // Reset form data (optional)
+  // Reset data
   customer.value = {
     name: "",
     address: "",
@@ -376,6 +278,9 @@ function saveReceipt() {
   items.value = [];
   paymentMethod.value = "";
   amountReceiver.value = "";
+
+  // Update receiptNumber for next receipt
+  updateReceiptNumber(savedReceipts);
 }
 </script>
 

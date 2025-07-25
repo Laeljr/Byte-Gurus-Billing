@@ -3,6 +3,26 @@
     <div class="w-full max-w-5xl bg-white rounded shadow p-6">
       <h1 class="text-3xl font-bold text-[#103355] mb-6">Saved Receipts</h1>
 
+      <!-- Return & Create New Buttons -->
+      <div class="mb-6 flex justify-between">
+        <button @click="goBack" class="btn-return px-4 py-2 rounded">
+          ← Return
+        </button>
+        <button @click="createNew" class="btn-create px-4 py-2 rounded">
+          + Create New
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="mb-4">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by Receipt No., Customer, or Date..."
+          class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#103355]"
+        />
+      </div>
+
       <table class="w-full border-collapse border border-gray-300 text-sm">
         <thead class="bg-gray-100 text-[#103355]">
           <tr>
@@ -14,7 +34,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(receipt, index) in receipts" :key="receipt.number || index" class="hover:bg-gray-50">
+          <tr
+            v-for="(receipt, index) in filteredReceipts"
+            :key="receipt.number || index"
+            class="hover:bg-gray-50"
+          >
             <td class="border border-gray-300 p-2">{{ receipt.number }}</td>
             <td class="border border-gray-300 p-2">{{ receipt.customer.name }}</td>
             <td class="border border-gray-300 p-2">{{ receipt.date }}</td>
@@ -26,18 +50,30 @@
               <button @click="deleteReceipt(index)" class="btn-delete px-2 py-1 rounded">Delete</button>
             </td>
           </tr>
-          <tr v-if="receipts.length === 0">
-            <td colspan="5" class="p-4 text-center text-gray-500 italic">No saved receipts found.</td>
+          <tr v-if="filteredReceipts.length === 0">
+            <td colspan="5" class="p-4 text-center text-gray-500 italic">
+              No receipts match your search.
+            </td>
           </tr>
         </tbody>
       </table>
 
       <!-- Modal for viewing receipt details -->
-      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        v-if="showModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-white rounded shadow-lg max-w-4xl w-full p-6 overflow-auto max-h-[80vh]">
-          <button @click="closeModal" class="mb-4 text-right text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
+          <button
+            @click="closeModal"
+            class="mb-4 text-right text-gray-500 hover:text-gray-700 font-bold text-xl"
+          >
+            &times;
+          </button>
 
-          <h2 class="text-2xl font-bold text-[#103355] mb-4">Receipt Details - {{ selectedReceipt.number }}</h2>
+          <h2 class="text-2xl font-bold text-[#103355] mb-4">
+            Receipt Details - {{ selectedReceipt.number }}
+          </h2>
 
           <p><strong>Date:</strong> {{ selectedReceipt.date }}</p>
 
@@ -59,7 +95,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, i) in selectedReceipt.items" :key="i" class="border-t">
+              <tr
+                v-for="(item, i) in selectedReceipt.items"
+                :key="i"
+                class="border-t"
+              >
                 <td class="border border-gray-300 p-2">{{ item.name }}</td>
                 <td class="border border-gray-300 p-2 text-right">{{ item.qty }}</td>
                 <td class="border border-gray-300 p-2 text-right">{{ item.price.toFixed(2) }}</td>
@@ -83,17 +123,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+
+const router = useRouter()
 
 const receipts = ref([])
 const showModal = ref(false)
 const selectedReceipt = ref({})
+const searchQuery = ref('')
 
 onMounted(() => {
   const saved = JSON.parse(localStorage.getItem('receipts') || '[]')
   receipts.value = saved
+})
+
+// Computed filtered receipts
+const filteredReceipts = computed(() => {
+  if (!searchQuery.value) {
+    return receipts.value
+  }
+  const query = searchQuery.value.toLowerCase()
+  return receipts.value.filter(
+    receipt =>
+      receipt.number.toLowerCase().includes(query) ||
+      receipt.customer.name.toLowerCase().includes(query) ||
+      receipt.date.toLowerCase().includes(query)
+  )
 })
 
 function viewReceipt(index) {
@@ -149,6 +207,10 @@ function downloadReceipt(index) {
   doc.text(`Received By: ${receipt.amountReceiver}`, 14, finalY + 26)
 
   doc.save(`${receipt.number}.pdf`)
+  doc.setFontSize(8)
+  doc.text('© 2025 Prepared by Lael Mulenga', 14, 285)
+   doc.setTextColor(150)
+  doc.text('This is an electronically generated document, no signature is required.', 14, 290)
 }
 
 function printReceipt(index) {
@@ -207,6 +269,18 @@ function printReceipt(index) {
   win.focus()
   win.print()
   win.close()
+  doc.setFontSize(8)
+  doc.text('© 2025 Prepared by Lael Mulenga', 14, 285)
+   doc.setTextColor(150)
+  doc.text('This is an electronically generated document, no signature is required.', 14, 290)
+}
+
+// New: Navigation handlers
+function goBack() {
+  router.push('/receipt')
+}
+function createNew() {
+  router.push('/receipt')
 }
 </script>
 
@@ -238,5 +312,19 @@ function printReceipt(index) {
 }
 .btn-delete:hover {
   color: #b91c1c;
+}
+.btn-return {
+  background: #64748b;
+  color: #fff;
+}
+.btn-return:hover {
+  background: #475569;
+}
+.btn-create {
+  background: #22c55e;
+  color: #fff;
+}
+.btn-create:hover {
+  background: #16a34a;
 }
 </style>
