@@ -1,14 +1,14 @@
 <template>
-  <!-- ✅ Main container with background image -->
+  <!--  Main container with background image -->
   <div
     class="min-h-screen w-full bg-cover bg-center flex justify-center items-start p-8"
     :style="{ backgroundImage: `url(${bgImage})` }"
   >
-    <!-- ✅ Main card container -->
+    <!-- Main card container -->
     <div class="w-full max-w-5xl bg-white/90 backdrop-blur-sm rounded shadow-lg p-6">
-      <!-- ✅ Printable area -->
+      <!--  Printable area -->
       <div ref="printArea">
-        <!-- ✅ Company Info -->
+        <!--  Company Info -->
         <div class="text-center mb-6">
           <h1 class="text-2xl font-bold text-[#103355]">Byte Gurus Billing Ltd.</h1>
           <p class="text-gray-600 text-sm">
@@ -16,13 +16,13 @@
           </p>
         </div>
 
-        <!-- ✅ Quote Header -->
+        <!--  Quote Header -->
         <div class="mb-6 text-center">
           <h2 class="text-3xl font-bold text-[#103355]">Quotation</h2>
           <p class="text-sm text-gray-600">Estimated cost for requested services</p>
         </div>
 
-        <!-- ✅ Quote metadata & client -->
+        <!--  Quote metadata & client -->
         <div class="flex justify-between text-sm mb-6">
           <div>
             <p><strong>Quote No:</strong> {{ quote.number }}</p>
@@ -114,7 +114,7 @@
             @click="openClientDialog"
             class="bg-[#103355] text-white px-4 py-2 rounded hover:bg-[#0e2a4d]"
           >
-            Edit Client Details
+            Edit Client 
           </button>
         </div>
         <div class="flex gap-2">
@@ -124,24 +124,8 @@
           >
             Save Quote
           </button>
-          <button
-            @click="generatePDF"
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Download Quote
-          </button>
-          <button
-            @click="printQuote"
-            class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            Print Quote
-          </button>
-          <button
-            @click="clearQuote"
-            class="bg-red-100 text-red-700 px-4 py-2 rounded hover:bg-red-200 text-sm"
-          >
-            Clear Quote
-          </button>
+          
+         
         </div>
       </div>
 

@@ -46,8 +46,8 @@
               <th class="p-2 text-right">Qty</th>
               <th class="p-2 text-right">Unit Price</th>
               <th class="p-2 text-right">Amount</th>
-              <th class="p-2 text-center">Actions</th>
-            </tr>
+          
+           </tr>
           </thead>
           <tbody>
             <tr
@@ -61,13 +61,7 @@
               <td class="p-2 text-right">{{ item.unitPrice.toFixed(2) }}</td>
               <td class="p-2 text-right">{{ (item.quantity * item.unitPrice).toFixed(2) }}</td>
               <td class="p-2 text-center">
-                <button
-                  @click.stop="deleteItem(i)"
-                  class="text-red-600 hover:text-red-800"
-                  aria-label="Delete item"
-                >
-                  &times;
-                </button>
+                
               </td>
             </tr>
             <tr v-if="items.length === 0">
@@ -112,15 +106,6 @@
         <div class="flex gap-2">
           <button @click="saveInvoice" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
             Save Invoice
-          </button>
-          <button @click="saveAndDownload" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Download PDF
-          </button>
-          <button @click="printInvoice" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-            Print Invoice
-          </button>
-          <button @click="clearInvoice" class="bg-red-100 text-red-700 px-4 py-2 rounded hover:bg-red-200 text-sm">
-            Clear Invoice
           </button>
         </div>
       </div>
@@ -253,10 +238,6 @@ function saveInvoice() {
   alert('Invoice saved!')
 }
 
-function saveAndDownload() {
-  saveInvoice()
-  generatePDF()
-}
 
 function generatePDF() {
   const doc = new jsPDF()

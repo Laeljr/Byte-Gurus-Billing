@@ -122,18 +122,7 @@
         >
           Edit Client
         </button>
-        <button
-          @click="openPreview"
-          class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800"
-        >
-          Preview & Print
-        </button>
-        <button
-          @click="exportPdf"
-          class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-        >
-          Export PDF
-        </button>
+            
         <button
           @click="saveReceipt"
           class="bg-[#103355] text-white px-6 py-2 rounded hover:bg-[#0e2a4d]"
@@ -161,37 +150,7 @@
       />
 
       <!-- Receipt Preview Modal -->
-      <div
-        v-if="showPreview"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        @keydown.esc="closePreview"
-      >
-        <div
-          class="bg-white w-full max-w-3xl max-h-[90vh] overflow-auto rounded shadow-lg p-6 relative"
-        >
-          <h3 class="text-2xl font-bold mb-4 text-center">Receipt Preview</h3>
-          <div
-            class="border p-4 overflow-auto max-h-[70vh]"
-            ref="previewContent"
-            v-html="printContent"
-          ></div>
-
-          <div class="mt-6 text-center space-x-4">
-            <button
-              @click="printFromPreview"
-              class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800"
-            >
-              Print
-            </button>
-            <button
-              @click="closePreview"
-              class="bg-gray-400 text-gray-800 px-6 py-2 rounded hover:bg-gray-500"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
+     
     </div>
   </div>
 </template>
@@ -333,45 +292,45 @@ function printFromPreview() {
   showPreview.value = false;
 }
 
-async function exportPdf() {
-  const printArea = document.getElementById("print-area");
-  if (!printArea) return;
-  const clone = printArea.cloneNode(true);
-  const ths = clone.querySelectorAll("th");
-  let actionIndex = -1;
-  ths.forEach((th, idx) => {
-    if (th.classList.contains("print-hidden")) actionIndex = idx;
-  });
-  if (actionIndex > -1) {
-    ths[actionIndex].remove();
-    clone.querySelectorAll("tbody tr").forEach((tr) => {
-      const tds = tr.querySelectorAll("td");
-      if (tds.length > actionIndex) tds[actionIndex].remove();
-    });
-  }
-  clone.querySelectorAll(".print-hidden").forEach((el) => el.remove());
+//async function exportPdf() {
+  //const printArea = document.getElementById("print-area");
+//  if (!printArea) return;
+//  const clone = printArea.cloneNode(true);
+//  const ths = clone.querySelectorAll("th");
+  //let actionIndex = -1;
+ // ths.forEach((th, idx) => {
+   // if (th.classList.contains("print-hidden")) actionIndex = idx;
+  //});
+ // if (actionIndex > -1) {
+   // ths[actionIndex].remove();
+    //clone.querySelectorAll("tbody tr").forEach((tr) => {
+      //const tds = tr.querySelectorAll("td");
+      //if (tds.length > actionIndex) tds[actionIndex].remove();
+    //});
+  //}
+ // clone.querySelectorAll(".print-hidden").forEach((el) => el.remove());
 
-  const container = document.createElement("div");
-  container.style.position = "fixed";
-  container.style.top = "-10000px";
-  container.style.left = "-10000px";
-  container.style.background = "white";
-  container.appendChild(clone);
-  document.body.appendChild(container);
+//  const container = document.createElement("div");
+ // container.style.position = "fixed";
+  //container.style.top = "-10000px";
+  //container.style.left = "-10000px";
+  //container.style.background = "white";
+  //container.appendChild(clone);
+  //document.body.appendChild(container);
 
-  const canvas = await html2canvas(clone, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
+  //const canvas = await html2canvas(clone, { scale: 2 });
+  //const imgData = canvas.toDataURL("image/png");
 
-  document.body.removeChild(container);
+  //document.body.removeChild(container);
 
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  //const pdf = new jsPDF("p", "mm", "a4");
+  //const pdfWidth = pdf.internal.pageSize.getWidth();
+  //const imgProps = pdf.getImageProperties(imgData);
+  //const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-  pdf.save(`Receipt_${today.replace(/-/g, "")}.pdf`);
-}
+//  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //pdf.save(`Receipt_${today.replace(/-/g, "")}.pdf`);
+//}
 
 // Updated saveReceipt with validation, reset and correct key & property names
 function saveReceipt() {
