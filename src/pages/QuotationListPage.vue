@@ -36,7 +36,7 @@
         <tbody>
           <tr
             v-for="(quote, index) in filteredQuotes"
-            :key="quote.number"
+            :key="quote.number || index"
             class="hover:bg-gray-50"
           >
             <td class="border border-gray-300 p-2">{{ quote.number }}</td>
@@ -66,7 +66,7 @@
         <div class="bg-white rounded shadow-lg max-w-4xl w-full p-6 overflow-auto max-h-[80vh]">
           <button
             @click="closeModal"
-            class="mb-4 text-right text-gray-500 hover:text-gray-700 font-bold"
+            class="mb-4 text-right text-gray-500 hover:text-gray-700 font-bold text-xl"
           >
             &times;
           </button>
@@ -114,7 +114,7 @@
           </div>
 
           <div
-            v-if="selectedQuote.notes.trim()"
+            v-if="selectedQuote.notes && selectedQuote.notes.trim() !== ''"
             class="text-sm text-gray-700 mt-4 whitespace-pre-wrap"
           >
             <strong>Notes:</strong>
@@ -139,23 +139,21 @@ const showModal = ref(false)
 const selectedQuote = ref(null)
 const searchQuery = ref('')
 
-// Load saved quotes on mount
 onMounted(() => {
   const saved = JSON.parse(localStorage.getItem('quotes') || '[]')
   quotes.value = saved
 })
 
-// Computed filtered list
 const filteredQuotes = computed(() => {
   if (!searchQuery.value) {
     return quotes.value
   }
-  const query = searchQuery.value.toLowerCase()
+  const q = searchQuery.value.toLowerCase()
   return quotes.value.filter(
     quote =>
-      quote.number.toLowerCase().includes(query) ||
-      quote.client.name.toLowerCase().includes(query) ||
-      quote.date.toLowerCase().includes(query)
+      (quote.number && quote.number.toLowerCase().includes(q)) ||
+      (quote.client?.name && quote.client.name.toLowerCase().includes(q)) ||
+      (quote.date && quote.date.toLowerCase().includes(q))
   )
 })
 
@@ -178,124 +176,179 @@ function deleteQuote(index) {
 
 function downloadQuote(index) {
   const quote = quotes.value[index]
-  const doc = new jsPDF()
+  const doc = new jsPDF('p', 'pt', 'a4')
+  const margin = 40
+  let y = margin
 
-  doc.setFontSize(16)
-  doc.text('Byte Gurus Billing Ltd.', 14, 15)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(20)
+  doc.setTextColor('#103355')
+  doc.text('Byte Gurus Billing Ltd.', margin, y)
+
+  doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
-  doc.text('21 Lilongwe, Nkana East, Kitwe', 14, 21)
-  doc.text('Phone: +260 969 291412 · Email: bytegurus98@gmail.com', 14, 26)
+  y += 20
+  doc.setTextColor('#000000')
+  doc.text('21 Lilongwe, Nkana East, Kitwe', margin, y)
+  y += 15
+  doc.text('Phone: +260 969 291412 · Email: bytegurus98@gmail.com', margin, y)
 
+  y += 30
   doc.setFontSize(12)
-  doc.text(`Quote #: ${quote.number}`, 14, 36)
-  doc.text(`Date: ${quote.date}`, 14, 42)
-  doc.text(`Expiry: ${quote.expiry}`, 14, 48)
-  doc.text(`To: ${quote.client.name}`, 14, 54)
-  doc.text(`${quote.client.address}`, 14, 60)
-  doc.text(`Contact: ${quote.client.phone}`, 14, 66)
-  doc.text(`Email: ${quote.client.email}`, 14, 72)
+  doc.setTextColor('#103355')
+  doc.text(`Quote #: ${quote.number}`, margin, y)
+  y += 15
+  doc.text(`Date: ${quote.date}`, margin, y)
+  y += 15
+  doc.text(`Expiry: ${quote.expiry}`, margin, y)
 
+  y += 25
+  doc.setTextColor('#000000')
+  doc.setFont('helvetica', 'bold')
+  doc.text('Bill To:', margin, y)
+  y += 15
+  doc.setFont('helvetica', 'normal')
+  doc.text(quote.client.name, margin, y)
+  y += 15
+  doc.text(quote.client.address, margin, y)
+  y += 15
+  doc.text(`Phone: ${quote.client.phone}`, margin, y)
+  y += 15
+  doc.text(`Email: ${quote.client.email}`, margin, y)
+
+  y += 30
   doc.autoTable({
-    head: [['Item', 'Qty', 'Price', 'Subtotal']],
-    body: quote.items.map(i => [
-      i.name,
-      i.qty,
-      i.price.toFixed(2),
-      (i.qty * i.price).toFixed(2)
+    head: [['Description', 'Qty', 'Price', 'Amount']],
+    body: quote.items.map(item => [
+      item.name,
+      item.qty,
+      item.price.toFixed(2),
+      (item.qty * item.price).toFixed(2)
     ]),
-    startY: 80
+    startY: y,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [16, 51, 85],
+      textColor: 255,
+      halign: 'center',
+    },
+    styles: {
+      fontSize: 10,
+      halign: 'right',
+      cellPadding: 6,
+    },
+    columnStyles: {
+      0: { halign: 'left' },
+      1: { halign: 'right' },
+      2: { halign: 'right' },
+      3: { halign: 'right' },
+    }
   })
 
+  const finalY = doc.lastAutoTable.finalY || y + 50
+  doc.setFontSize(12)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor('#103355')
   doc.text(
     `Estimated Total: ZMW ${quote.total.toFixed(2)}`,
-    150,
-    doc.autoTable.previous.finalY + 10
+    doc.internal.pageSize.getWidth() - margin,
+    finalY + 30,
+    { align: 'right' }
   )
 
-  if (quote.notes.trim()) {
+  if (quote.notes && quote.notes.trim() !== '') {
     doc.setFontSize(10)
-    doc.text('Notes:', 14, doc.autoTable.previous.finalY + 20)
-    doc.text(
-      doc.splitTextToSize(quote.notes, 180),
-      14,
-      doc.autoTable.previous.finalY + 26
-    )
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor('#000000')
+    doc.text('Notes:', margin, finalY + 50)
+    doc.setFontSize(9)
+    doc.text(doc.splitTextToSize(quote.notes, doc.internal.pageSize.getWidth() - margin * 2), margin, finalY + 60)
   }
-  
+
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor('#999999')
+  doc.text(
+    'Thank you for your business — Byte Gurus Billing Ltd.',
+    doc.internal.pageSize.getWidth() / 2,
+    doc.internal.pageSize.getHeight() - 30,
+    { align: 'center' }
+  )
+
   doc.save(`${quote.number}.pdf`)
 }
 
 function printQuote(index) {
   const quote = quotes.value[index]
-  const printWindow = window.open('', '_blank', 'width=800,height=600')
-  
-
+  const win = window.open('', '', 'width=800,height=600')
   const html = `
     <html>
-      <head>
-        <title>Print Quote ${quote.number}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; color: #103355; }
-          h1, h2, h3 { color: #103355; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #ddd; padding: 8px; }
-          th { background-color: #f0f0f0; }
-          .total { text-align: right; font-weight: bold; margin-top: 10px; }
-          .notes { margin-top: 20px; white-space: pre-wrap; }
-        </style>
-      </head>
-      <body>
+    <head>
+      <title>Print Quote</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+        header { border-bottom: 2px solid #103355; margin-bottom: 20px; }
+        h1 { color: #103355; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+        th { background-color: #103355; color: #fff; }
+        td:first-child, th:first-child { text-align: left; }
+        .total { margin-top: 20px; font-weight: bold; text-align: right; }
+        footer { margin-top: 40px; font-size: 12px; text-align: center; color: #999; }
+        .notes { white-space: pre-wrap; margin-top: 20px; color: #555; }
+      </style>
+    </head>
+    <body>
+      <header>
         <h1>Byte Gurus Billing Ltd.</h1>
-        <p>21 Lilongwe, Nkana East, Kitwe</p>
-        <p>Phone: +260 969 291412 · Email: bytegurus98@gmail.com</p>
-
-        <h2>Quotation</h2>
+        <p>21 Lilongwe, Nkana East, Kitwe<br/>Phone: +260 969 291412 · Email: bytegurus98@gmail.com</p>
+      </header>
+      <section>
         <p><strong>Quote #:</strong> ${quote.number}</p>
         <p><strong>Date:</strong> ${quote.date}</p>
         <p><strong>Expiry:</strong> ${quote.expiry}</p>
-
-        <h3>Client Information</h3>
-        <p>${quote.client.name}</p>
-        <p>${quote.client.address}</p>
-        <p>Phone: ${quote.client.phone}</p>
-        <p>Email: ${quote.client.email}</p>
-
-        <table>
-          <thead>
+        <p><strong>Bill To:</strong><br/>
+          ${quote.client.name}<br/>
+          ${quote.client.address}<br/>
+          Phone: ${quote.client.phone}<br/>
+          Email: ${quote.client.email}
+        </p>
+      </section>
+      <table>
+        <thead>
+          <tr><th>Description</th><th>Qty</th><th>Price</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          ${quote.items
+            .map(
+              (i) => `
             <tr>
-              <th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th>
+              <td>${i.name}</td>
+              <td>${i.qty}</td>
+              <td>${i.price.toFixed(2)}</td>
+              <td>${(i.qty * i.price).toFixed(2)}</td>
             </tr>
-          </thead>
-          <tbody>
-            ${quote.items
-              .map(
-                i => `
-              <tr>
-                <td>${i.name}</td>
-                <td style="text-align: right;">${i.qty}</td>
-                <td style="text-align: right;">${i.price.toFixed(2)}</td>
-                <td style="text-align: right;">${(i.qty * i.price).toFixed(2)}</td>
-              </tr>`
-              )
-              .join('')}
-          </tbody>
-        </table>
-
-        <div class="total">Estimated Total: ZMW ${quote.total.toFixed(2)}</div>
-
-        ${quote.notes.trim() ? `<div class="notes"><strong>Notes:</strong><p>${quote.notes}</p></div>` : ''}
-    
-        </body>
-    </html>`
-    
-
-  printWindow.document.write(html)
-  printWindow.document.close()
-  printWindow.focus()
-  printWindow.print()
-  printWindow.close()
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+      <p class="total">Estimated Total: ZMW ${quote.total.toFixed(2)}</p>
+      ${
+        quote.notes && quote.notes.trim() !== ''
+          ? `<div class="notes"><strong>Notes:</strong><p>${quote.notes}</p></div>`
+          : ''
+      }
+      <footer>Thank you for your business — Byte Gurus Billing Ltd.</footer>
+    </body>
+    </html>
+  `
+  win.document.write(html)
+  win.document.close()
+  win.focus()
+  win.print()
+  win.close()
 }
-
 
 // Navigation handlers
 function goBack() {
@@ -308,30 +361,30 @@ function createNew() {
 
 <style scoped>
 .btn-view {
-  background-color: #3b82f6;
-  color: white;
+  background: #3b82f6;
+  color: #fff;
 }
 .btn-view:hover {
-  background-color: #2563eb;
+  background: #2563eb;
 }
 .btn-download {
-  background-color: #10b981;
-  color: white;
+  background: #10b981;
+  color: #fff;
 }
 .btn-download:hover {
-  background-color: #059669;
+  background: #059669;
 }
 .btn-print {
-  background-color: #4f46e5;
-  color: white;
+  background: #6366f1;
+  color: #fff;
 }
 .btn-print:hover {
-  background-color: #4338ca;
+  background: #4f46e5;
 }
 .btn-delete {
-  background-color: transparent;
-  border: none;
   color: #dc2626;
+  background: transparent;
+  border: none;
 }
 .btn-delete:hover {
   color: #b91c1c;
